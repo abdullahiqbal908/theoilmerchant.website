@@ -60,11 +60,15 @@ export default function HomePage() {
   const [dotIndex, setDotIndex] = useState(0)
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(null)
 
   useEffect(() => {
     getAllProducts()
-      .then(setProducts)
-      .catch(console.error)
+      .then(data => { setProducts(data); setFetchError(null) })
+      .catch(err => {
+        console.error('[Homepage] Products fetch failed:', err?.message || err)
+        setFetchError(err?.message || 'Failed to load products')
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -81,32 +85,91 @@ export default function HomePage() {
   return (
     <>
       {/* ── HERO ── */}
-      <section style={{ position: 'relative', width: '100%', height: 520, overflow: 'hidden', background: '#D4EAF5' }}>
+      <style>{`
+        .hero-section {
+          position: relative;
+          width: 100%;
+          min-height: 520px;
+          overflow: hidden;
+          background: #D4EAF5;
+          display: flex;
+          align-items: center;
+        }
+        .hero-inner {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 60px 8% 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 40px;
+        }
+        .hero-text { flex: 1; min-width: 0; }
+        .hero-image {
+          flex: 0 0 340px;
+          height: 400px;
+          border-radius: 4px;
+          overflow: hidden;
+          position: relative;
+        }
+        .hero-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .hero-image-overlay {
+          position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(42,100,150,0.2) 0%, transparent 60%);
+          mix-blend-mode: multiply;
+        }
+        .hero-dots {
+          position: absolute; bottom: 24px; left: 50%;
+          transform: translateX(-50%);
+          display: flex; gap: 8px; z-index: 3;
+        }
+        @media (max-width: 767px) {
+          .hero-section { min-height: auto; }
+          .hero-inner {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 48px 24px 64px;
+            gap: 32px;
+          }
+          .hero-text { width: 100%; }
+          .hero-text h1 { font-size: 2.2rem !important; }
+          .hero-image {
+            flex: none;
+            width: 100%;
+            height: 260px;
+            border-radius: 4px;
+          }
+        }
+      `}</style>
+      <section className="hero-section">
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 70% 50%, #5B9EC9 0%, #2A6496 45%, #1C2B3A 100%)' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 80%, rgba(125,155,119,0.3) 0%, transparent 60%)' }} />
 
-        {/* Product image right */}
-        <div style={{ position: 'absolute', right: '8%', top: '50%', transform: 'translateY(-50%)', height: 400, width: 340, zIndex: 2 }}>
-          <div style={{ position: 'absolute', inset: 0, borderRadius: 4, overflow: 'hidden' }}>
-            <img src="https://placehold.co/340x400/D4EAF5/2A6496?text=Pure+Oil" alt="Product" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(42,100,150,0.2) 0%, transparent 60%)', mixBlendMode: 'multiply' }} />
+        <div className="hero-inner">
+          {/* Text */}
+          <div className="hero-text">
+            <p className="section-label" style={{ color: 'rgba(212,234,245,0.8)', margin: '0 0 16px' }}>Made in Pakistan</p>
+            <h1 style={{ fontFamily: '"Libre Baskerville", serif', fontSize: '3.2rem', fontWeight: 400, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
+              Pure oils.<br /><em>Nothing else.</em>
+            </h1>
+            <p style={{ fontFamily: "'Jost', sans-serif", fontSize: '0.9rem', fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 340 }}>
+              Nature extracts the best. We deliver it to you — pure hair oils, honestly made, now delivered across Pakistan.
+            </p>
+            <Link href="/all-oils" className="btn-outline-white">Shop the Collection</Link>
+          </div>
+
+          {/* Product image */}
+          <div className="hero-image">
+            <img src="https://placehold.co/340x400/D4EAF5/2A6496?text=Pure+Oil" alt="Product" />
+            <div className="hero-image-overlay" />
           </div>
         </div>
 
-        {/* Text left */}
-        <div style={{ position: 'absolute', left: '8%', top: '50%', transform: 'translateY(-50%)', maxWidth: 460, zIndex: 2 }}>
-          <p className="section-label" style={{ color: 'rgba(212,234,245,0.8)', margin: '0 0 16px' }}>Made in Pakistan</p>
-          <h1 style={{ fontFamily: '"Libre Baskerville", serif', fontSize: '3.2rem', fontWeight: 400, color: '#fff', lineHeight: 1.1, letterSpacing: '-0.03em', margin: '0 0 12px' }}>
-            Pure oils.<br /><em>Nothing else.</em>
-          </h1>
-          <p style={{ fontFamily: "'Jost', sans-serif", fontSize: '0.9rem', fontWeight: 300, color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, margin: '0 0 32px', maxWidth: 340 }}>
-            Nature extracts the best. We deliver it to you — pure hair oils, honestly made, now delivered across Pakistan.
-          </p>
-          <Link href="/all-oils" className="btn-outline-white">Shop the Collection</Link>
-        </div>
-
         {/* Carousel dots */}
-        <div style={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 8, zIndex: 2 }}>
+        <div className="hero-dots">
           {[0, 1, 2].map(i => (
             <button
               key={i}
@@ -145,6 +208,10 @@ export default function HomePage() {
       <section id="shop" style={{ padding: '0 40px 56px', maxWidth: 1400, margin: '0 auto' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px 0', color: '#6A7F8E', fontSize: '0.875rem' }}>Loading products…</div>
+        ) : fetchError ? (
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#CB4335', fontSize: '0.8rem' }}>
+            Could not load products. Please try refreshing.
+          </div>
         ) : (
           <div className="home-product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
             {tabProducts.map(p => <ProductCard key={p.id} product={p} />)}
